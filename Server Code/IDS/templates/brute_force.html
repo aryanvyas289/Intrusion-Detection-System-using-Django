@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brute Force Detection Page</title>
+    <style>
+        :root {
+            --primary-color: #00cec9;
+            --secondary-color: #81ecec;
+            --dark-bg: #1e1e2e;
+            --card-bg: #252636;
+            --text-color: #fff;
+            --text-secondary: #8a8a8a;
+            --border-radius: 14px;
+            --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: var(--dark-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            max-width: 1000px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+        
+        .status-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 206, 201, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 206, 201, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 206, 201, 0); }
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th { color: var(--primary-color); text-transform: uppercase; }
+        
+        tbody tr:hover { background-color: rgba(0, 206, 201, 0.05); }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: #000;
+            padding: 12px 25px;
+            font-weight: 600;
+            border-radius: 50px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 25px;
+        }
+        
+        .btn:hover { background-color: #00a8a3; }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brute Force Attack Detection</h1>
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>Monitoring Login Attempts</span>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Attacker's IP</th>
+                    <th>Attempts</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in brute_force_attempts %}
+                <tr>
+                    <td>{{ attempt.Detection_date_and_time }}</td>
+                    <td>{{ attempt.Attackers_IP }}</td>
+                    <td>{{ attempt.Number_of_attempts }}</td>
+                    <td>{{ attempt.attempted_username }}</td>
+                    <td>{{ attempt.attempted_password }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No brute force attempts detected</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <a href="/" class="btn">Back to IDS Dashboard</a>
+    </div>
+</body>
+</html>

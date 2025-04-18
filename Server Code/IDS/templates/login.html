@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - IDS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        
+        .login-container { 
+            max-width: 450px; 
+            background: white; 
+            padding: 40px; 
+            border-radius: 12px; 
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease-in-out; 
+        }
+
+        .login-container:hover { 
+            transform: scale(1.02); 
+        }
+
+        .login-title { 
+            font-size: 28px; 
+            font-weight: bold; 
+            margin-bottom: 20px; 
+            text-align: center; 
+            color: #6a11cb; 
+        }
+
+        .alert { 
+            font-size: 14px; 
+            margin-bottom: 15px; 
+        }
+
+        .btn-primary {
+            background: #6a11cb;
+            border: none;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #4a0faa;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2 class="login-title">Welcome Back!</h2>
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

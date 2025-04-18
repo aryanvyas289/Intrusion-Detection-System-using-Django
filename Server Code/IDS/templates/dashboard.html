@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intrusion Detection System Dashboard</title>
+    <style>
+        /* Modern Color Scheme and Base Styling */
+        :root {
+            --primary-color: #3a6df0;
+            --secondary-color: #6c5ce7;
+            --accent-color: #00d2d3;
+            --danger-color: #e84393;
+            --dark-bg: #1e1e2e;
+            --card-bg: #252636;
+            --text-color: #fff;
+            --text-secondary: #8a8a8a;
+            --border-radius: 14px;
+            --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            background: var(--dark-bg);
+            padding: 30px;
+            width: 100%;
+            min-height: 100vh;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Styling */
+        .dashboard-header {
+            margin-bottom: 40px;
+            position: relative;
+            padding-top: 20px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            margin-right: 8px;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Cards Container */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 0 auto;
+            padding: 0 50px;
+            flex-grow: 1;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 40px 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            min-height: 350px;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .card-sql::before {
+            background: linear-gradient(90deg, #ff6b6b, #ff9f43);
+        }
+        
+        .card-dos::before {
+            background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+        }
+        
+        .card-brute::before {
+            background: linear-gradient(90deg, #00cec9, #81ecec);
+        }
+        
+        .card-top {
+            margin-bottom: auto;
+        }
+        
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            display: block;
+            color: var(--primary-color);
+        }
+        
+        .card-sql .card-icon {
+            color: #ff6b6b;
+        }
+        
+        .card-dos .card-icon {
+            color: #6c5ce7;
+        }
+        
+        .card-brute .card-icon {
+            color: #00cec9;
+        }
+        
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .card-description {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+        
+        /* Button Styling */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: block;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(58, 109, 240, 0.3);
+        }
+        
+        .btn:hover {
+            background-color: #2956c9;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(58, 109, 240, 0.4);
+        }
+        
+        .btn-sql {
+            background-color: #ff6b6b;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-sql:hover {
+            background-color: #e84545;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-dos {
+            background-color: #6c5ce7;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+        
+        .btn-dos:hover {
+            background-color: #5649c1;
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
+        }
+        
+        .btn-brute {
+            background-color: #00cec9;
+            box-shadow: 0 5px 15px rgba(0, 206, 201, 0.3);
+        }
+        
+        .btn-brute:hover {
+            background-color: #00a8a3;
+            box-shadow: 0 8px 20px rgba(0, 206, 201, 0.4);
+        }
+        
+        .logout-container {
+            margin-top: 40px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .logout-btn {
+            background-color: var(--danger-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 15px 30px;
+            max-width: 200px;
+            margin: 0 auto;
+            box-shadow: 0 5px 15px rgba(232, 67, 147, 0.3);
+        }
+        
+        .logout-btn:hover {
+            background-color: #d63031;
+            box-shadow: 0 8px 20px rgba(232, 67, 147, 0.4);
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+            }
+        }
+        
+        /* Background decoration */
+        .decoration {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            opacity: 0.1;
+            filter: blur(80px);
+            z-index: -1;
+        }
+        
+        .decoration-1 {
+            width: 500px;
+            height: 500px;
+            top: -250px;
+            left: -250px;
+        }
+        
+        .decoration-2 {
+            width: 400px;
+            height: 400px;
+            bottom: -200px;
+            right: -200px;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .cards-container {
+                grid-template-columns: repeat(3, 1fr);
+                padding: 0 30px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .cards-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .cards-container {
+                grid-template-columns: 1fr;
+                padding: 0 15px;
+            }
+            
+            .card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Background decorations -->
+        <div class="decoration decoration-1"></div>
+        <div class="decoration decoration-2"></div>
+        
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1>Aryan's Intrusion Detection System</h1>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span class="status-text">System Active - Monitoring Network</span>
+            </div>
+        </div>
+        
+        <!-- Attack Detection Cards -->
+        <div class="cards-container">
+            <!-- SQL Injection Card -->
+            <div class="card card-sql" onclick="location.href='/sql-injection/'">
+                <div class="card-top">
+                    <span class="card-icon">&#128421;</span>
+                    <h3 class="card-title">SQL Injection</h3>
+                    <p class="card-description">Monitor and detect SQL injection attacks targeting your database systems.</p>
+                </div>
+                <a href="/sql-injection/" class="btn btn-sql">View Attacks</a>
+            </div>
+            
+            <!-- dos detection Card -->
+            <div class="card card-dos" onclick="location.href='/dos-detection/'">
+                <div class="card-top">
+                    <span class="card-icon">&#128246;</span>
+                    <h3 class="card-title">DOS Detection</h3>
+                    <p class="card-description">Track distributed denial of service attempts and detection attacks.</p>
+                </div>
+                <a href="/dos-detection/" class="btn btn-dos">View Attacks</a>
+            </div>
+            
+            <!-- Brute Force Card -->
+            <div class="card card-brute" onclick="location.href='/brute-force/'">
+                <div class="card-top">
+                    <span class="card-icon">&#128274;</span>
+                    <h3 class="card-title">Brute Force</h3>
+                    <p class="card-description">Identify login attempts using brute force methods across your systems.</p>
+                </div>
+                <a href="/brute-force/" class="btn btn-brute">View Attacks</a>
+            </div>
+        </div>
+        
+        <!-- Logout Button -->
+        <div class="logout-container">
+            <a href="/logout/" class="btn logout-btn">
+                <span></span> Logout
+            </a>
+        </div>
+    </div>
+</body>
+</html>

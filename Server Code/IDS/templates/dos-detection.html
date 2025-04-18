@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOS Detection Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282a36;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #1e1e2e;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            width: 80%;
+            text-align: center;
+            color: white;
+        }
+        h1 {
+            color: #8be9fd;
+        }
+        .pagination-container {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+        .pagination button {
+            background: #44475a;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .pagination button:hover {
+            background: #6272a4;
+        }
+        .pagination button.active {
+            background: #bd93f9;
+            color: black;
+            font-weight: bold;
+        }
+        .pagination-info {
+            color: #8be9fd;
+            margin: 0 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #44475a;
+            color: white;
+            border-radius: 8px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #6272a4;
+            text-align: center;
+        }
+        th {
+            background: #bd93f9;
+            color: black;
+        }
+        tr:nth-child(even) {
+            background: #3c3f58;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background: #8be9fd;
+            color: black;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .back-btn:hover {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+        select {
+            padding: 10px;
+            background: #44475a;
+            color: white;
+            border: 1px solid #6272a4;
+            border-radius: 5px;
+            outline: none;
+        }
+    </style>
+    <script>
+        let currentPage = 1;
+        let rowsPerPage = 10;
+        let totalRows = 0;
+        let totalPages = 1;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initPagination();
+            document.getElementById('rowsPerPageSelect').addEventListener('change', function() {
+                rowsPerPage = parseInt(this.value);
+                currentPage = 1;
+                updatePagination();
+            });
+        });
+
+        function initPagination() {
+            const tableBody = document.querySelector('table tbody');
+            const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
+            totalRows = rows.length;
+            totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+            updatePagination();
+        }
+
+        function updatePagination() {
+            totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+            if (currentPage > totalPages) currentPage = totalPages;
+            updatePaginationInfo();
+            createPaginationButtons();
+            showCurrentPage();
+        }
+
+        function showCurrentPage() {
+            const tableBody = document.querySelector('table tbody');
+            const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, rows.length);
+            
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = 'none';
+            }
+            for (let i = startIndex; i < endIndex; i++) {
+                if (rows[i]) rows[i].style.display = '';
+            }
+        }
+
+        function createPaginationButtons() {
+            const paginationContainer = document.querySelector('.pagination');
+            paginationContainer.innerHTML = '';
+            
+            addPaginationButton(paginationContainer, '«', () => goToPage(1));
+            addPaginationButton(paginationContainer, '<', () => goToPage(Math.max(1, currentPage - 1)));
+            
+            const maxButtons = 5;
+            const halfButtons = Math.floor(maxButtons / 2);
+            let startPage = Math.max(1, currentPage - halfButtons);
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+            if (endPage === totalPages) startPage = Math.max(1, endPage - maxButtons + 1);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === currentPage;
+                addPaginationButton(paginationContainer, i.toString(), () => goToPage(i), isActive);
+            }
+            
+            addPaginationButton(paginationContainer, '>', () => goToPage(Math.min(totalPages, currentPage + 1)));
+            addPaginationButton(paginationContainer, '»', () => goToPage(totalPages));
+        }
+
+        function addPaginationButton(container, text, clickHandler, isActive = false) {
+            const button = document.createElement('button');
+            button.innerHTML = text;
+            button.addEventListener('click', clickHandler);
+            if (isActive) button.classList.add('active');
+            container.appendChild(button);
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            updatePaginationInfo();
+            showCurrentPage();
+            updateActiveButton();
+        }
+
+        function updateActiveButton() {
+            const buttons = document.querySelectorAll('.pagination button');
+            buttons.forEach(button => {
+                if (button.innerHTML === '«' || button.innerHTML === '<' || 
+                    button.innerHTML === '>' || button.innerHTML === '»') return;
+                const pageNum = parseInt(button.textContent);
+                if (pageNum === currentPage) button.classList.add('active');
+                else button.classList.remove('active');
+            });
+        }
+
+        function updatePaginationInfo() {
+            const startRow = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+            const endRow = Math.min(startRow + rowsPerPage - 1, totalRows);
+            document.querySelector('.pagination-info').textContent = 
+                `Showing ${startRow} to ${endRow} of ${totalRows} entries`;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>DOS Attack Detection</h1>
+
+        <!-- Pagination Options -->
+        <div class="pagination-container">
+            <div>
+                <label for="rowsPerPageSelect">Show entries:</label>
+                <select id="rowsPerPageSelect">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div class="pagination-info">Showing 0 to 0 of 0 entries</div>
+        </div>
+
+        <!-- DDoS Attack Logs -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Attacker's IP</th>
+                    <th>Attack Type</th>
+                    <th>Traffic Rate</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in Traffic_rate %}
+                <tr>
+                    <td>{{ attempt.Detection_date_and_time }}</td>
+                    <td>{{ attempt.Attackers_IP }}</td>
+                    <td>{{ attempt.Attack_type }}</td>
+                    <td>{{ attempt.Traffic_rate }}</td>
+                    <td>{{ attempt.Details }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No DoS Attempts detected</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination Controls -->
+        <div class="pagination"></div>
+
+        <a href="/" class="back-btn">Back to IDS Dashboard</a>
+    </div>
+</body>
+</html>

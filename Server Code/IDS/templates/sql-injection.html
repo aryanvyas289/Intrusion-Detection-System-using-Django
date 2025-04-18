@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Injection Detection Page</title>
+    <style>
+        /* Modern Color Scheme and Base Styling */
+        :root {
+            --primary-color: #ff6b6b;
+            --accent-color: #ff79c6;
+            --dark-bg: #1e1e2e;
+            --card-bg: #252636;
+            --table-bg: #44475a;
+            --table-alt-bg: #3c3f58;
+            --text-color: #fff;
+            --text-secondary: #8a8a8a;
+            --border-color: #6272a4;
+            --border-radius: 14px;
+            --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            background: var(--dark-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 90%;
+            max-width: 1200px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        /* Header Styling */
+        .header {
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+            margin-top: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 8px;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Pagination Options */
+        .pagination-container {
+            margin: 25px 0 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .entries-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .entries-selector label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        select {
+            padding: 8px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        select:hover {
+            border-color: var(--accent-color);
+        }
+        
+        select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.25);
+        }
+        
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 8px 15px;
+            border-radius: 6px;
+        }
+        
+        /* Table Styling */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: var(--table-bg);
+            color: var(--text-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+        
+        th {
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+        
+        td {
+            border-bottom: 1px solid rgba(98, 114, 164, 0.3);
+        }
+        
+        tr:nth-child(even) {
+            background: var(--table-alt-bg);
+        }
+        
+        tr:hover {
+            background: rgba(255, 121, 198, 0.1);
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Empty state styling */
+        .empty-state {
+            padding: 30px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        /* Pagination Styling */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 25px 0;
+        }
+        
+        .pagination button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .pagination button:hover {
+            background: rgba(255, 121, 198, 0.2);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .pagination button.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border: none;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+        }
+        
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            padding: 12px 20px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(255, 107, 107, 0.4);
+        }
+        
+        .back-icon {
+            font-size: 1.2rem;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+            }
+        }
+        
+        /* Background decoration */
+        .decoration {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            opacity: 0.05;
+            filter: blur(80px);
+            z-index: -1;
+        }
+        
+        .decoration-1 {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            right: -100px;
+        }
+        
+        .decoration-2 {
+            width: 250px;
+            height: 250px;
+            bottom: -100px;
+            left: -100px;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .pagination-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            th, td {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    <script>
+        // Global variables for pagination
+        let currentPage = 1;
+        let rowsPerPage = 10;
+        let totalRows = 0;
+        let totalPages = 1;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize pagination
+            initPagination();
+            
+            // Add event listener for rows per page select
+            document.getElementById('rowsPerPageSelect').addEventListener('change', function() {
+                rowsPerPage = parseInt(this.value);
+                currentPage = 1; // Reset to first page
+                updatePagination();
+            });
+
+            // Add visual feedback for empty tables
+            checkEmptyTable();
+        });
+
+        function checkEmptyTable() {
+            const tableBody = document.querySelector('table tbody');
+            const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
+            
+            if (rows.length === 1 && rows[0].querySelector('td[colspan]')) {
+                const emptyCell = rows[0].querySelector('td');
+                emptyCell.classList.add('empty-state');
+            }
+        }
+
+        function initPagination() {
+            // Get all table rows
+            const tableBody = document.querySelector('table tbody');
+            const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
+            
+            // Skip counting if it's just the empty message row
+            if (rows.length === 1 && rows[0].querySelector('td[colspan]')) {
+                totalRows = 0;
+            } else {
+                totalRows = rows.length;
+                
+                // Force at least one entry for display purposes if table has content
+                // but totalRows is somehow still 0
+                if (totalRows === 0 && !rows[0].querySelector('td[colspan]')) {
+                    totalRows = rows.length || 1;
+                }
+            }
+            
+            // Calculate total pages
+            totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+            
+            // Create pagination controls
+            updatePagination();
+            
+            // Force an immediate update of pagination info
+            updatePaginationInfo();
+            
+            // Show current page
+            showCurrentPage();
+        }
+        
+        function updatePagination() {
+            // If there are entries but totalRows is still 0, set it to at least 1
+            if (totalRows === 0) {
+                const tableBody = document.querySelector('table tbody');
+                const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
+                
+                // If there's content and not just the "no entries" message
+                if (rows.length >= 1 && !rows[0].querySelector('td[colspan]')) {
+                    totalRows = rows.length;
+                }
+            }
+            
+            const startRow = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+            const endRow = Math.min(startRow + rowsPerPage - 1, totalRows);
+            
+            const paginationInfo = document.querySelector('.pagination-info');
+            if (paginationInfo) {
+                paginationInfo.textContent = `Showing ${startRow} to ${endRow} of ${totalRows} entries`;
+            }
+        }
+
+        function showCurrentPage() {
+            // Get all table rows
+            const tableBody = document.querySelector('table tbody');
+            const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
+            
+            // Skip pagination if it's just the empty message row
+            if (rows.length === 1 && rows[0].querySelector('td[colspan]')) {
+                return;
+            }
+            
+            // Calculate start and end indexes
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, rows.length);
+            
+            // Hide all rows
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = 'none';
+            }
+            
+            // Show rows for current page
+            for (let i = startIndex; i < endIndex; i++) {
+                if (rows[i]) {
+                    rows[i].style.display = '';
+                }
+            }
+        }
+        function createPaginationButtons() {
+            const paginationContainer = document.querySelector('.pagination');
+            // Clear previous buttons
+            paginationContainer.innerHTML = '';
+            
+            // Don't show pagination for empty tables
+            if (totalRows === 0) {
+                paginationContainer.style.display = 'none';
+                return;
+            } else {
+                paginationContainer.style.display = 'flex';
+            }
+            
+            // First page button
+            addPaginationButton(paginationContainer, '&laquo;', () => goToPage(1));
+            
+            // Previous page button
+            addPaginationButton(paginationContainer, '&lt;', () => goToPage(Math.max(1, currentPage - 1)));
+            
+            // Page number buttons
+            const maxButtons = 5;
+            const halfButtons = Math.floor(maxButtons / 2);
+            let startPage = Math.max(1, currentPage - halfButtons);
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+            
+            // Adjust start page if end page is at maximum
+            if (endPage === totalPages) {
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === currentPage;
+                addPaginationButton(paginationContainer, i.toString(), () => goToPage(i), isActive);
+            }
+            
+            // Next page button
+            addPaginationButton(paginationContainer, '&gt;', () => goToPage(Math.min(totalPages, currentPage + 1)));
+            
+            // Last page button
+            addPaginationButton(paginationContainer, '&raquo;', () => goToPage(totalPages));
+        }
+
+</script>
+</head>
+<body>
+    <div class="container">
+        <div class="decoration decoration-1"></div>
+        <div class="decoration decoration-2"></div>
+        
+        <div class="header">
+            <h1>SQL Injection Attack Detection</h1>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span class="status-text">Monitoring Active</span>
+            </div>
+        </div>
+
+        <!-- Pagination Options -->
+        <div class="pagination-container">
+            <div class="entries-selector">
+                <label for="rowsPerPageSelect">Show entries:</label>
+                <select id="rowsPerPageSelect">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div class="pagination-info">Showing 0 to 0 of 0 entries</div>
+        </div>
+
+        <!-- SQL Injection Attack Logs -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Attacker's IP</th>
+                        <th>Username</th>
+                        <th>Password</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in attempts %}
+                    <tr>
+                        <td>{{ attempt.Detection_date_and_time }}</td>
+                        <td>{{ attempt.Attackers_IP }}</td>
+                        <td>{{ attempt.attempted_username }}</td>
+                        <td>{{ attempt.attempted_password }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No SQL injection attempts detected</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination"></div>
+
+        <a href="/" class="back-btn">
+            <span class="back-icon">&#8592;</span>
+            Back to IDS Dashboard
+        </a>
+    </div>
+</body>
+</html>
